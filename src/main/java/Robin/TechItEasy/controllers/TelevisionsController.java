@@ -3,31 +3,27 @@ package Robin.TechItEasy.controllers;
 
 import Robin.TechItEasy.Television;
 import Robin.TechItEasy.exceptions.RecordNotFoundException;
+import Robin.TechItEasy.repository.TelevisionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+
 @RestController
 public class TelevisionsController {
-    public HashMap<Integer,Television> televisions = new HashMap<Integer, Television>();
+
+    @Autowired
+    private TelevisionRepository televisionRepository;
 
 
     @PostMapping("/inittelevisions")
     public ResponseEntity<String> initTelevision (){
-
-        Television samsungXl = new Television("Samsung XL",1111,449.99);
-        Television huawaiSmart = new Television("Huawai Smart",2222,299.99);
-        Television appleTv4 = new Television("Apple Tv 4",3333,1019.99);
-        televisions.put(1111, samsungXl);
-        televisions.put(2222, huawaiSmart);
-        televisions.put(3333, appleTv4);
-        return new ResponseEntity<>("Initialized Inventory as "+televisions, HttpStatus.OK);
     }
     @GetMapping("/televisions")
-    public ResponseEntity<HashMap<Integer,Television>> showInventory() {
-        return new ResponseEntity<>(this.televisions, HttpStatus.OK);
+    public ResponseEntity<List<Robin.TechItEasy.model.Television>> getAllTelevisions() {
+        return ResponseEntity.ok(televisionRepository.findAll());
     }
     @PostMapping("/televisions")
     public ResponseEntity<String> addTelevision (@RequestBody Television television){
