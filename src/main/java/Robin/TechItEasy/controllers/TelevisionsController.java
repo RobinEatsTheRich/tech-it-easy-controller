@@ -1,51 +1,56 @@
 package Robin.TechItEasy.controllers;
 
-import Robin.TechItEasy.Television;
+import Robin.TechItEasy.dtos.TelevisionDto;
+import Robin.TechItEasy.dtos.TelevisionInputDto;
+import Robin.TechItEasy.services.TelevisionService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.net.URI;
+import java.util.List;
 
+@RequestMapping("/televisions")
 @RestController
 public class TelevisionsController {
-    public HashMap<Integer,Television> inventory = new HashMap<Integer, Television>();
 
-
-    @PostMapping("/initInventory")
-    public String initTelevision (){
-
-        Television samsungXl = new Television("Samsung XL",1111,449.99);
-        Television huawaiSmart = new Television("Huawai Smart",2222,299.99);
-        Television appleTv4 = new Television("Apple Tv 4",3333,1019.99);
-        inventory.put(1111, samsungXl);
-        inventory.put(2222, huawaiSmart);
-        inventory.put(3333, appleTv4);
-        return "Initialized Inventory as "+inventory;
-    }
-    @GetMapping("/inventory")
-    public HashMap<Integer,Television> showInventory() {
-        return inventory;
-    }
-    @PostMapping("/television")
-    public String addTelevision (@RequestBody Television television){
-        inventory.put(television.getSerialNumber(), television);
-        return "television successfully added!";
+    @Autowired
+    private TelevisionService televisionService;
+    @GetMapping
+    public ResponseEntity<List<TelevisionDto>> getAllTelevisions() {
+        List<TelevisionDto> televisionDtoList;
+        televisionDtoList = televisionService.getAllTelevisions();
+        return ResponseEntity.ok(televisionDtoList);
     }
 
-    @GetMapping("/television/{id}")
-    public Television showInventory(@PathVariable int id) {
-        return inventory.get(id);
+    @GetMapping("/{id}")
+    public ResponseEntity<TelevisionDto> getTelevision(@PathVariable Long id) {
+        return ResponseEntity.ok(televisionService.getTelevision(id));
     }
-    @PutMapping("/television/{id}")
-    public String updateTelevision(@PathVariable int id, @RequestBody Television television) {
-        inventory.get(id).setName(television.getName());
-        inventory.get(id).setPrice(television.getPrice());
-        return "television successfully updated! (Serial Number Update not possible)";
+
+    @PostMapping
+    public ResponseEntity<TelevisionDto> addTelevision (@Valid @RequestBody TelevisionInputDto inputDto){
+        TelevisionDto addedTelevisionDto = televisionService.addTelevision(inputDto);
+        URI uri = URI.create(
+                ServletUriComponentsBuilder
+                        .fromCurrentRequest()
+                        .path("/"+addedTelevisionDto.getId()).toUriString());
+
+        return ResponseEntity.created(uri).body(addedTelevisionDto);
     }
-    @DeleteMapping("/television/{id}")
-    public String DeleteTelevision(@PathVariable int id){
-        inventory.remove(id);
-        return "television successfully removed!";
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TelevisionDto> updateTelevision(@Valid @PathVariable Long id, @RequestBody TelevisionInputDto inputDto) {
+        TelevisionDto edittedTelevisionDto = televisionService.editTelevision(id, inputDto);
+        return ResponseEntity.ok(edittedTelevisionDto);
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteTelevision(@PathVariable Long id){
+        televisionService.deleteTelevision(id);
+        return new ResponseEntity<>("TV succesfully deleted", HttpStatus.OK);
     }
 
 }
