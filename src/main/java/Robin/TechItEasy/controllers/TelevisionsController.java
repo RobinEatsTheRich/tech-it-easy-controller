@@ -1,8 +1,9 @@
 package Robin.TechItEasy.controllers;
 
-import Robin.TechItEasy.exceptions.RecordNotFoundException;
-import Robin.TechItEasy.model.Television;
-import Robin.TechItEasy.repository.TelevisionRepository;
+import Robin.TechItEasy.dtos.TelevisionDto;
+import Robin.TechItEasy.dtos.TelevisionInputDto;
+import Robin.TechItEasy.services.TelevisionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,47 +18,39 @@ import java.util.List;
 public class TelevisionsController {
 
     @Autowired
-    private TelevisionRepository televisionRepository;
+    private TelevisionService televisionService;
     @GetMapping
-    public ResponseEntity<List<Television>> getAllTelevisions() {
-        return ResponseEntity.ok(televisionRepository.findAll());
-    }
-    @PostMapping
-    public ResponseEntity<Television> addTelevision (@RequestBody Television television){
-        televisionRepository.save(television);
-        URI uri = URI.create(
-                ServletUriComponentsBuilder
-                        .fromCurrentRequest()
-                        .path("/"+television.getId()).toUriString());
-        return ResponseEntity.created(uri).body(television);
+    public ResponseEntity<List<TelevisionDto>> getAllTelevisions() {
+        List<TelevisionDto> televisionDtoList;
+        televisionDtoList = televisionService.getAllTelevisions();
+        return ResponseEntity.ok(televisionDtoList);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Television> showInventory(@PathVariable Long id) {
-        if (id >= 0 && televisionRepository.findById(id).isPresent()) {
-            return ResponseEntity.ok(televisionRepository.findById(id).get());
-        } else {
-            throw new RecordNotFoundException("ID cannot be found");
-        }
+    public ResponseEntity<TelevisionDto> getTelevision(@PathVariable Long id) {
+        return ResponseEntity.ok(televisionService.getTelevision(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<TelevisionDto> addTelevision (@Valid @RequestBody TelevisionInputDto inputDto){
+        TelevisionDto addedTelevisionDto = televisionService.addTelevision(inputDto);
+        URI uri = URI.create(
+                ServletUriComponentsBuilder
+                        .fromCurrentRequest()
+                        .path("/"+addedTelevisionDto.getId()).toUriString());
+
+        return ResponseEntity.created(uri).body(addedTelevisionDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Television> updateTelevision(@PathVariable Long id, @RequestBody Television television) {
-        if (id >= 0 && televisionRepository.findById(id).isPresent()) {
-            television.setId(id);
-            return ResponseEntity.ok(televisionRepository.save(television));
-        } else {
-            throw new RecordNotFoundException("ID cannot be found");
-        }
+    public ResponseEntity<TelevisionDto> updateTelevision(@Valid @PathVariable Long id, @RequestBody TelevisionInputDto inputDto) {
+        TelevisionDto edittedTelevisionDto = televisionService.editTelevision(id, inputDto);
+        return ResponseEntity.ok(edittedTelevisionDto);
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTelevision(@PathVariable Long id){
-        if (id >= 0 && televisionRepository.findById(id).isPresent()) {
-            televisionRepository.deleteById(id);
-            return new ResponseEntity<>("TV succesfully deleted", HttpStatus.OK);
-        } else {
-            throw new RecordNotFoundException("ID cannot be found");
-        }
+        televisionService.deleteTelevision(id);
+        return new ResponseEntity<>("TV succesfully deleted", HttpStatus.OK);
     }
 
 }
