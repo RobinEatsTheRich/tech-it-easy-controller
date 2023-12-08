@@ -1,9 +1,11 @@
 package Robin.TechItEasy.services;
 
 import Robin.TechItEasy.dtos.TelevisionDto;
-import Robin.TechItEasy.dtos.TelevisionInputDto;
+import Robin.TechItEasy.inputDtos.TelevisionInputDto;
 import Robin.TechItEasy.exceptions.RecordNotFoundException;
+import Robin.TechItEasy.model.RemoteController;
 import Robin.TechItEasy.model.Television;
+import Robin.TechItEasy.repository.RemoteControllerRepository;
 import Robin.TechItEasy.repository.TelevisionRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,14 +17,20 @@ import java.util.Optional;
 public class TelevisionService {
 
 
-    private final TelevisionRepository repos;
+    private final TelevisionRepository televisionRepos;
+    private final RemoteControllerRepository remoteControllerRepos;
+    private final RemoteControllerService remoteControllerService;
 
-    public TelevisionService(TelevisionRepository repos) {
-        this.repos = repos;
+
+    public TelevisionService(TelevisionRepository televisionRepos, RemoteControllerRepository remoteControllerRepos, RemoteControllerService remoteControllerService) {
+        this.televisionRepos = televisionRepos;
+        this.remoteControllerRepos = remoteControllerRepos;
+        this.remoteControllerService = remoteControllerService;
     }
 
+
     public List<TelevisionDto> getAllTelevisions(){
-        List<Television> televisionList = repos.findAll();
+        List<Television> televisionList = televisionRepos.findAll();
         List<TelevisionDto> televisionDtoList = new ArrayList<>();
         for(Television television : televisionList)
         {
@@ -32,7 +40,7 @@ public class TelevisionService {
     }
 
     public TelevisionDto getTelevision(Long id){
-        Optional<Television> televisionOptional = repos.findById(id);
+        Optional<Television> televisionOptional = televisionRepos.findById(id);
         if (televisionOptional.isPresent()) {
             Television television = televisionOptional.get();
             return dtoFromTelevision(television);
@@ -43,18 +51,18 @@ public class TelevisionService {
 
     public TelevisionDto addTelevision(TelevisionInputDto dto){
         Television television = televisionFromDto(dto);
-        repos.save(television);
+        televisionRepos.save(television);
         return dtoFromTelevision(television);
     }
 
     public TelevisionDto editTelevision(Long id, TelevisionInputDto dto){
-        Optional<Television> televisionOptional = repos.findById(id);
+        Optional<Television> televisionOptional = televisionRepos.findById(id);
         if (televisionOptional.isPresent()) {
             Television OgTelevision = televisionOptional.get();
             Television television = televisionFromDto(dto);
             television.setId(OgTelevision.getId());
 
-            Television newTelevision = repos.save(television);
+            televisionRepos.save(television);
 
             return dtoFromTelevision(television);
         } else {
@@ -63,11 +71,33 @@ public class TelevisionService {
     }
 
     public void deleteTelevision(Long id){
-        Optional<Television> televisionOptional = repos.findById(id);
+        Optional<Television> televisionOptional = televisionRepos.findById(id);
         if (televisionOptional.isPresent()) {
-            repos.deleteById(id);
+            televisionRepos.deleteById(id);
         } else {
             throw new RecordNotFoundException("ID cannot be found");
+        }
+    }
+
+    public TelevisionDto assignRemoteControllerToTelevision(Long id, Long remoteControllerId){
+        Optional<Television> televisionOptional = televisionRepos.findById(id);
+        Optional<RemoteController> remoteControllerOptional = remoteControllerRepos.findById(remoteControllerId);
+
+        if(televisionOptional.isPresent() && remoteControllerOptional.isPresent()){
+            Television television = televisionOptional.get();
+            RemoteController remoteController = remoteControllerOptional.get();
+            television.setRemoteController(remoteController);
+            televisionRepos.save(television);
+            return dtoFromTelevision(television);
+
+        }else if(televisionOptional.isPresent() && remoteControllerOptional.isEmpty()){
+            throw new RecordNotFoundException("Remote Controller ID cannot be found");
+
+        }else if(televisionOptional.isEmpty() && remoteControllerOptional.isPresent()){
+            throw new RecordNotFoundException("Television ID cannot be found");
+
+        }else{
+            throw new RecordNotFoundException("Neither ID can be found");
         }
     }
 
@@ -90,6 +120,12 @@ public class TelevisionService {
         dto.setAmbiLight(television.getAmbiLight());
         dto.setOriginalStock(television.getOriginalStock());
         dto.setSold(television.getSold());
+        if(television.getRemoteController() != null) {
+            dto.setRemoteControllerDto(
+                    remoteControllerService.dtoFromRemoteController(
+                            television.getRemoteController()
+                    ));
+        }
         return dto;
     }
 

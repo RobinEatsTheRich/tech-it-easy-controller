@@ -1,7 +1,8 @@
 package Robin.TechItEasy.controllers;
 
 import Robin.TechItEasy.dtos.TelevisionDto;
-import Robin.TechItEasy.dtos.TelevisionInputDto;
+import Robin.TechItEasy.inputDtos.IdInputDto;
+import Robin.TechItEasy.inputDtos.TelevisionInputDto;
 import Robin.TechItEasy.services.TelevisionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,10 +48,17 @@ public class TelevisionsController {
         TelevisionDto edittedTelevisionDto = televisionService.editTelevision(id, inputDto);
         return ResponseEntity.ok(edittedTelevisionDto);
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTelevision(@PathVariable Long id){
         televisionService.deleteTelevision(id);
         return new ResponseEntity<>("TV succesfully deleted", HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/remote_controller")
+    public ResponseEntity<TelevisionDto> assignRemoteControllerToTelevision(@PathVariable Long id, @RequestBody IdInputDto inputDto) {
+        TelevisionDto edittedTelevisionDto = televisionService.assignRemoteControllerToTelevision(id, inputDto.id);
+        return ResponseEntity.ok(edittedTelevisionDto);
     }
 
 }

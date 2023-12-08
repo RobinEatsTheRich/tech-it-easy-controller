@@ -1,4 +1,4 @@
-package Robin.TechItEasy.dtos;
+package Robin.TechItEasy.inputDtos;
 
 import jakarta.validation.constraints.*;
 
@@ -28,10 +28,8 @@ public class TelevisionInputDto {
     private Boolean hdr;
     private Boolean bluetooth;
     private Boolean ambiLight;
-    @NotNull
     @PositiveOrZero
     private Integer originalStock;
-    @NotNull
     @PositiveOrZero
     private Integer sold;
 

@@ -1,27 +1,15 @@
 package Robin.TechItEasy.dtos;
 
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.*;
-
 public class TelevisionDto {
 
     private Long id;
-    @NotNull
     private String type;
-    @NotNull
-    @Size(min=1, max=128)
     private String brand;
-    @NotNull
-    @Size(min=1, max=128)
     private String name;
-    @NotNull
-    @Positive
     private Double price;
     private Double availableSize;
     private Double refreshRate;
-    @Size(min=1, max=64)
     private String screenType;
-    @Size(min=1, max=64)
     private String screenQuality;
     private Boolean smartTv;
     private Boolean wifi;
@@ -29,12 +17,11 @@ public class TelevisionDto {
     private Boolean hdr;
     private Boolean bluetooth;
     private Boolean ambiLight;
-    @NotNull
-    @PositiveOrZero
     private Integer originalStock;
-    @NotBlank
-    @PositiveOrZero
     private Integer sold;
+
+    private RemoteControllerDto remoteControllerDto;
+
     public Long getId() {
         return id;
     }
@@ -169,6 +156,14 @@ public class TelevisionDto {
 
     public void setSold(Integer sold) {
         this.sold = sold;
+    }
+
+    public RemoteControllerDto getRemoteControllerDto() {
+        return remoteControllerDto;
+    }
+
+    public void setRemoteControllerDto(RemoteControllerDto remoteControllerDto) {
+        this.remoteControllerDto = remoteControllerDto;
     }
 }
 
